@@ -21,10 +21,48 @@ def load_model(model_path):
     return joblib.load(model_path)
 
 try:
-    model = load_model('modelo/lgbm_best_model_pipeline.pkl')
+    model = load_model('lgbm_best_model_pipeline.pkl')
 except Exception as e:
     st.error(f"Erro ao carregar o modelo: {e}")
     st.stop()
+
+# Carregar o dataset para recomendações
+@st.cache_data
+def load_data():
+    return pd.read_csv('dados/dataset_carros_brasil.csv')
+
+df_carros = load_data()
+
+def exibir_recomendacoes(valor_estimado):
+    st.divider()
+    st.markdown('### Recomendação:')
+    st.subheader("Veja opções reais na mesma faixa de preço")
+    
+    limite_inferior = valor_estimado * 0.90
+    limite_superior = valor_estimado * 1.10
+    
+    # Buscar na base de dados carros dentro dos valores
+    carros_abaixo = df_carros[(df_carros['Valor_Venda'] >= limite_inferior) & (df_carros['Valor_Venda'] < valor_estimado)]
+    carros_acima = df_carros[(df_carros['Valor_Venda'] >= valor_estimado) & (df_carros['Valor_Venda'] <= limite_superior)]
+    
+    # Sortear até 2 carros de cada faixa
+    recomendados_abaixo = carros_abaixo.sample(n=min(2, len(carros_abaixo))) if not carros_abaixo.empty else pd.DataFrame()
+    recomendados_acima = carros_acima.sample(n=min(2, len(carros_acima))) if not carros_acima.empty else pd.DataFrame()
+    
+    # Juntar as recomendações em uma única tabela
+    df_recomendacoes = pd.concat([recomendados_abaixo, recomendados_acima])
+    
+    if not df_recomendacoes.empty:
+        colunas_mostrar = ['Marca', 'Modelo', 'Ano', 'Cor', 'Combustivel', 'Valor_Venda']
+        if all(col in df_recomendacoes.columns for col in colunas_mostrar):
+            df_exibicao = df_recomendacoes[colunas_mostrar].copy()
+            df_exibicao = df_exibicao.sort_values(by='Valor_Venda')
+            df_exibicao['Valor_Venda'] = df_exibicao['Valor_Venda'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            st.dataframe(df_exibicao, use_container_width=True, hide_index=True)
+        else:
+            st.dataframe(df_recomendacoes, use_container_width=True, hide_index=True)
+    else:
+        st.info("Não encontramos carros semelhantes a esse valor nesse exato momento na base de dados.")
 
 # Criar formulário para receber os dados
 with st.form("form_previsao"):
@@ -75,6 +113,7 @@ if submit_button:
             
             st.success("✅ Previsão realizada com sucesso!")
             st.metric(label="Valor de Venda Estimado", value=f"R$ {valor_estimado:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            exibir_recomendacoes(valor_estimado)
             
         except Exception as e:
             # Log de fallback caso o Pickle envolva apenas o estimador e não o Pipeline inteiro.
@@ -91,6 +130,7 @@ if submit_button:
                     
                     st.success("✅ Previsão realizada com sucesso!")
                     st.metric(label="Valor de Venda Estimado", value=f"R$ {valor_estimado:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+                    exibir_recomendacoes(valor_estimado)
                 else:
                     st.error(f"Erro inesperado no modelo com codificação manual: {e}")
             except Exception as e_fallback:
