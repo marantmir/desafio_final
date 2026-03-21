@@ -14,6 +14,8 @@ html_page_title = """
                """               
 st.markdown(html_page_title, unsafe_allow_html=True)
 
+st.warning("Trabalho acadêmico de avaliação de Aprendizado de Máquina.")
+
 # Carregar o modelo (com cache para não recarregar toda vez)
 @st.cache_resource
 def load_model(model_path):
