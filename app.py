@@ -1,11 +1,27 @@
 import streamlit as st
 import pandas as pd
 import joblib
+from PIL import Image
+import base64
+
 
 # Configuração da página
 st.set_page_config(page_title="Desafio Final Previsão de Preço de Carros", page_icon="🚗", layout="centered")
+    
 
-#st.title("Previsão de Valor de Venda de Carros")
+# Converte para base64
+with open("imgs/logo_carro.png", "rb") as f:
+    data = base64.b64encode(f.read()).decode()
+
+# HTML centralizado
+st.markdown(
+    f"""
+    <div style="display: flex; justify-content: center;">
+        <img src="data:image/png;base64,{data}" style="width: 50%;">
+    </div>
+    """,
+    unsafe_allow_html=True
+)   
 
 html_page_title = """
      <div style="background-color:black;padding=60px">
@@ -14,8 +30,9 @@ html_page_title = """
                """               
 st.markdown(html_page_title, unsafe_allow_html=True)
 
-st.sidebar.info("Este conteúdo é destinado apenas a fins educacionais.")
-st.sidebar.info("Os dados exibidos são ilustrativos e podem não corresponder a situações reais.")
+st.sidebar.image(Image.open('imgs/aviso.png'), width='stretch')
+st.sidebar.success("Este conteúdo é destinado apenas a fins educacionais.")
+st.sidebar.success("Os dados exibidos são ilustrativos e podem não corresponder a situações reais.")
 
 # Carregar o modelo (com cache para não recarregar toda vez)
 @st.cache_resource
@@ -86,7 +103,7 @@ with st.form("form_previsao"):
         portas = st.number_input("Número de Portas", min_value=2, max_value=5, value=4, step=1)
 
     submit_button = st.form_submit_button(label="🔍 Prever Valor de Venda")
-    st.info("Dados ficticios")
+    st.error("Dados ficticios")
 
 if submit_button:
     if marca and modelo and cor:
