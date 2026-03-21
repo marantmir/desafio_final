@@ -86,6 +86,7 @@ with st.form("form_previsao"):
         portas = st.number_input("Número de Portas", min_value=2, max_value=5, value=4, step=1)
 
     submit_button = st.form_submit_button(label="🔍 Prever Valor de Venda")
+    st.info("Dados ficticios")
 
 if submit_button:
     if marca and modelo and cor:
