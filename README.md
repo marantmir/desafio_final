@@ -1,4 +1,6 @@
-<img src="imgs/chave_carro.png" width="400">
+<p align="center">
+  <img src="imgs/chave_carro.png" width="300">
+</p>
 
 # Projeto de Previsão de Preços de Carro
 
