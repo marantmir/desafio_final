@@ -1,57 +1,44 @@
 import streamlit as st
 import pandas as pd
-import joblib
 from PIL import Image
-#import base64
+import requests as request
+#import joblib
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
 
 
 # Configuração da página
 st.set_page_config(page_title="Desafio Final Previsão de Preço de Carros", page_icon="🚗", layout="centered")
-    
+#st.markdown('## Docker')
 
-# Converte para base64
-#with open("imgs/logo_carro.png", "rb") as f:
-#    data = base64.b64encode(f.read()).decode()
-
-# HTML centralizado
-#st.markdown(
-#    f"""
-#    <div style="display: flex; justify-content: center;">
-#        <img src="data:image/png;base64,{data}" style="width: 50%;">
-#    </div>
-#    """,
-#    unsafe_allow_html=True
-#)   
-
-html_page_cloud = """
+html_page_docker = """
      <div style="background-color:black;padding=60px">
-         <p style='text-align:center;font-size:50px;font-weight:bold'>Streamlit.io / Cloud</p>
+         <p style='text-align:center;font-size:50px;font-weight:bold'>Docker</p>
      </div>
-               """               
-st.markdown(html_page_cloud, unsafe_allow_html=True)
+               """
+st.markdown(html_page_docker, unsafe_allow_html=True)
 
 html_page_title = """
      <div style="background-color:black;padding=60px">
          <p style='text-align:center;font-size:50px;font-weight:bold'>Desafio Final - Previsão de Valor de Venda de Carros</p>
      </div>
-               """               
+               """
 st.markdown(html_page_title, unsafe_allow_html=True)
 
 st.sidebar.image(Image.open('imgs/aviso.png'), width='stretch')
 st.sidebar.success("Este conteúdo é destinado apenas a fins educacionais.")
 st.sidebar.success("Os dados exibidos são ilustrativos e podem não corresponder a situações reais.")
 
-# Carregar o modelo (com cache para não recarregar toda vez)
-@st.cache_resource
-def load_model(model_path):
-    # Substitua pelo nome correto do seu arquivo pickle, se for diferente
-    return joblib.load(model_path)
+# Carregar o modelo (pipeline) treinado
+#@st.cache_resource
+#def load_pipeline(pipeline_path):
+#    return joblib.load(pipeline_path)
 
-try:
-    model = load_model('modelo/lgbm_best_full_model_pipeline.pkl')
-except Exception as e:
-    st.error(f"Erro ao carregar o modelo: {e}")
-    st.stop()
+#try:
+#    pipeline = load_pipeline('modelo/lgbm_best_model_pipeline.pkl')
+#except Exception as e:
+#    st.error(f"Erro ao carregar o modelo: {e}")
+#    st.stop()
 
 # Carregar o dataset para recomendações
 @st.cache_data
@@ -68,15 +55,12 @@ def exibir_recomendacoes(valor_estimado):
     limite_inferior = valor_estimado * 0.90
     limite_superior = valor_estimado * 1.10
     
-    # Buscar na base de dados carros dentro dos valores
     carros_abaixo = df_carros[(df_carros['Valor_Venda'] >= limite_inferior) & (df_carros['Valor_Venda'] < valor_estimado)]
     carros_acima = df_carros[(df_carros['Valor_Venda'] >= valor_estimado) & (df_carros['Valor_Venda'] <= limite_superior)]
     
-    # Sortear até 2 carros de cada faixa
     recomendados_abaixo = carros_abaixo.sample(n=min(2, len(carros_abaixo))) if not carros_abaixo.empty else pd.DataFrame()
     recomendados_acima = carros_acima.sample(n=min(2, len(carros_acima))) if not carros_acima.empty else pd.DataFrame()
     
-    # Juntar as recomendações em uma única tabela
     df_recomendacoes = pd.concat([recomendados_abaixo, recomendados_acima])
     
     if not df_recomendacoes.empty:
@@ -109,13 +93,12 @@ with st.form("form_previsao"):
         combustivel = st.selectbox("Combustível", options=['Gasolina', 'Flex', 'Diesel'])
         portas = st.number_input("Número de Portas", min_value=2, max_value=5, value=4, step=1)
 
+    st.error("Dados fictícios")
     submit_button = st.form_submit_button(label="🔍 Prever Valor de Venda")
-    st.error("Dados ficticios")
 
 if submit_button:
     if marca and modelo and cor:
-        # 1. Tratar os dados
-        # A nova feature foi criada a partir de 2026 menos o Ano
+        # 1. Calcular a nova feature
         idade_carro = 2026 - ano
         
         # 2. Criar DataFrame com as entradas
@@ -131,38 +114,24 @@ if submit_button:
             'idade_carro': [idade_carro]
         }
         
-        df_entrada = pd.DataFrame(dados_entrada)
+        # Criar DataFrame com as entradas
+        df = pd.DataFrame(dados_entrada)
         
-        # 3. Fazer a previsão
         try:
-            # Tenta prever assumindo que o modelo contém o pipeline com o OneHotEncoder
-            previsao = model.predict(df_entrada)
-            valor_estimado = previsao[0]
+            # Enviar os dados crus para a API
+            response = request.post("http://api:8000/forecast", json=df.to_dict(orient="records"))
+            response.raise_for_status()  # Levantar erro se a requisição falhar
+            valor_estimado = response.json()["forecast"][0]
             
             st.success("✅ Previsão realizada com sucesso!")
-            st.metric(label="Valor de Venda Estimado", value=f"R$ {valor_estimado:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            st.metric(
+                label="Valor de Venda Estimado", 
+                value=f"R$ {valor_estimado:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            )
             exibir_recomendacoes(valor_estimado)
             
         except Exception as e:
-            # Log de fallback caso o Pickle envolva apenas o estimador e não o Pipeline inteiro.
-            # Se o Pickle tiver apenas o estimador treinado com OneHot manual, precisará das colunas exatas de treino.
-            try:
-                # Fallback usando dummies e alinhando com a estrutura de treino do modelo
-                if hasattr(model, "feature_names_in_"):
-                    df_entrada_encoded = pd.get_dummies(df_entrada)
-                    # Adiciona colunas faltantes com valor 0 e alinha as colunas
-                    df_entrada_encoded = df_entrada_encoded.reindex(columns=model.feature_names_in_, fill_value=0)
-                    
-                    previsao = model.predict(df_entrada_encoded)
-                    valor_estimado = previsao[0]
-                    
-                    st.success("✅ Previsão realizada com sucesso!")
-                    st.metric(label="Valor de Venda Estimado", value=f"R$ {valor_estimado:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-                    exibir_recomendacoes(valor_estimado)
-                else:
-                    st.error(f"Erro inesperado no modelo com codificação manual: {e}")
-            except Exception as e_fallback:
-                st.error(f"Erro ao realizar a previsão: {e_fallback}. Certifique-se de que o input bate com os dados de treinamento.")
+            st.error(f"Erro ao fazer a previsão: {e}")
                 
     else:
         st.warning("⚠️ Por favor, preencha todos os campos de texto como Marca, Modelo e Cor.")
