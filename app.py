@@ -52,7 +52,7 @@ try:
     model_ridge = load_model('modelo/Ridge_best_full_model_pipeline_3.pkl')
     model_gb    = load_model('modelo/GradientBoosting_best_full_model_pipeline_3.pkl')
     model_xgb   = load_model('modelo/XGBoost_best_full_model_pipeline_3.pkl')
-    model_rf    = load_model('modelo/RandomForest_best_full_model_pipeline_3.pkl')
+    model_lgbm    = load_model('modelo/LightGBM_best_full_model_pipeline_3.pkl')
     
 except Exception as e:
     st.error(f"Erro ao carregar o modelo: {e}")
@@ -159,7 +159,7 @@ if submit_button:
             valor_estimado_ridge = model_ridge.predict(df_entrada)[0]
             valor_estimado_gb = model_gb.predict(df_entrada)[0]
             valor_estimado_xgb = model_xgb.predict(df_entrada)[0]
-            valor_estimado_rf = model_rf.predict(df_entrada)[0]
+            valor_estimado_lgbm = model_lgbm.predict(df_entrada)[0]
            
             
             st.success("✅ Previsão realizada com sucesso!")
@@ -169,12 +169,12 @@ if submit_button:
             ridge = f"{valor_estimado_ridge:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
             xgb = f"{valor_estimado_xgb:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
             gb = f"{valor_estimado_gb:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            rf = f"{valor_estimado_rf:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            lgbm = f"{valor_estimado_lgbm:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
            
            
             data = {
-                    'Modelo': ['Lasso', 'Ridge', 'XGB', 'GB', 'RF'],
-                    'Valor Estimado (R$)': [lasso, ridge, xgb, gb, rf ]
+                    'Modelo': ['Lasso', 'Ridge', 'XGB', 'GB', 'LightGBM'],
+                    'Valor Estimado (R$)': [lasso, ridge, xgb, gb, lgbm ]
                      }
 
             df = pd.DataFrame(data)
