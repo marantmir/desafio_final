@@ -6,7 +6,7 @@ from PIL import Image
 
 
 # Configuração da página
-st.set_page_config(page_title="Desafio Final Previsão de Preço de Carros", page_icon="🚗", layout="centered")
+st.set_page_config(page_title="Previsão de Preço de Carros", page_icon="🚗", layout="centered")
     
 
 # Converte para base64
