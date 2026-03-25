@@ -20,7 +20,7 @@ A primeira etapa desse projeto foi a análise exploratória dos dados, onde iden
 
 ### Modelagem
 
-Ao final dessa etapa o dataset gerado foi salvo e se iniciou a etapa de modelagem.
+Ao final da etapa de análise,  o dataset gerado foi salvo e se iniciou a etapa de modelagem.
 Nessa etapa os dados deverão ser tratados para que o modelo possa usar no treinamento e a avaliação seja feita.
 Foram treinados e avaliados 7 modelos de reggressão.
 Foram geradas 4 métricas e mais duas colunas com informações geradas durante o treinamento.
