@@ -29,7 +29,10 @@ O GridSearch foi aplicado ao melhor modelo para identificar os melhores hiperpar
 
 #### Deploy
 
-Foi implementada uma aplicação web com a lib Streamlit. A aplicação esta hospedada no site streamlit.io.
+Foi implementada uma aplicação web com a lib Streamlit. 
+
+A aplicação esta hospedada no site streamlit.io.
+
 Acesso: [🔗 Desafio Final Previsao de Valor de Carro](https://desafiofinal.streamlit.app/)
 
 #### Docker
