@@ -16,7 +16,7 @@ Este projeto visa prever o preço de carros com base em diversas característica
 
 ### Análise Exploratória
 
-A primeira etapa desse projeto foi a análise exploratória dos dados, onde identificou a existência de dados ausentes, dados com valores extremos (outliers) e dados indevidos com a coluna onde foi encontrado. Nessa foram identificados padrões de valores de venda em função das colunas de dados existentes.
+A primeira etapa desse projeto foi a análise exploratória dos dados, onde identificou a existência de dados ausentes, dados com valores extremos (outliers) e dados indevidos com a coluna onde foi encontrado. Nessa análise foram identificados padrões de valores de venda em função das colunas de dados existentes.
 
 ### Modelagem
 
