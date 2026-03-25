@@ -25,7 +25,7 @@ Nessa etapa os dados deverão ser tratados para que o modelo possa usar no trein
 Foram treinados e avaliados 7 modelos de reggressão.
 Foram geradas 4 métricas e mais duas colunas com informações geradas durante o treinamento.
 Um dataset com todos treinamentos, métricas e dados gerados é apresentado no final.
-O GrdidSearch foi aplicado ao melhor modelo para identificar os melhores hiperparametros.
+O GridSearch foi aplicado ao melhor modelo para identificar os melhores hiperparametros.
 
 #### Deploy
 
