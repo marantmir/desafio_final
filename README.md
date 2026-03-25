@@ -1,6 +1,5 @@
 <p align="center">
-  <img src="imgs/app_docker.png" width="500" height="450">
-  <img src="imgs/app_streamlit.png" width="500" height="450">
+  <img src="imgs/apps.png" width="600" height="600">
 </p>
 
 # Projeto Acadêmico de Previsão de Preços de Carro
