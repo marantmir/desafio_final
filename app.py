@@ -7,21 +7,6 @@ from PIL import Image
 
 # Configuração da página
 st.set_page_config(page_title="Previsão de Preço de Carros", page_icon="🚗", layout="centered")
-    
-
-# Converte para base64
-#with open("imgs/logo_carro.png", "rb") as f:
-#    data = base64.b64encode(f.read()).decode()
-
-# HTML centralizado
-#st.markdown(
-#    f"""
-#    <div style="display: flex; justify-content: center;">
-#        <img src="data:image/png;base64,{data}" style="width: 50%;">
-#    </div>
-#    """,
-#    unsafe_allow_html=True
-#)   
 
 html_page_cloud = """
      <div style="background-color:black;padding=60px">
