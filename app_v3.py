@@ -149,18 +149,11 @@ def exibir_recomendacoes(valor_estimado):
         if st.button("🤖 Solicitar Análise do Especialista (OpenAI / OpenRouter)"):
             with st.spinner("O especialista está analisando as opções e gerando um comparativo..."):
                 st.session_state['texto_analise'] = gerar_analise_especialista(df_para_analise)
-        
-
-        
+                
         if st.session_state.get('texto_analise'):
             st.markdown("### 👨‍🔧 Parecer do Especialista")
             st.info(st.session_state['texto_analise'])
-            st.download_button(
-                label="📥 Baixar Análise",
-                data=st.session_state['texto_analise'],
-                file_name="analise_especialista.txt",
-                mime="text/plain"
-            )
+            st.download(st.session_state['texto_analise'])
             
     else:
         st.info("Não encontramos carros semelhantes a esse valor nesse exato momento na base de dados.")
