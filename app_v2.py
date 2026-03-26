@@ -55,48 +55,31 @@ def load_data():
 df_carros = load_data()
 
 def gerar_analise_especialista(df_carros):
-    carros_str = df_carros.to_string(index=False)
-    prompt = f"""
-    Você é um especialista em mecânica de automóveis e mercado de carros novos e usados no Brasil.
-    Um cliente está avaliando as seguintes opções de compra de carros dentro da sua faixa de preço baseada em uma predição:
-    
-    {carros_str}
-    
-    Analise essas opções e aponte claramente qual desses carros você recomendaria a compra e por quê. Considere durabilidade, mecânica, manutenção, consumo e mercado de revenda. O cliente quer a melhor escolha custo-benefício. Faça comparativos entre eles.
-    """
-    
-    messages = [
-        {"role": "system", "content": "Você é um especialista automotivo e de mercado no Brasil."},
-        {"role": "user", "content": prompt}
-    ]
-
     try:
-        # Tenta com a OpenAI primeiro
         client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        
+        carros_str = df_carros.to_string(index=False)
+        prompt = f"""
+        Você é um especialista em mecânica de automóveis e mercado de carros novos e usados no Brasil.
+        Um cliente está avaliando as seguintes opções de compra de carros dentro da sua faixa de preço baseada em uma predição:
+        
+        {carros_str}
+        
+        Analise essas opções e aponte claramente qual desses carros você recomendaria a compra e por quê. Considere durabilidade, mecânica, manutenção, consumo e mercado de revenda. O cliente quer a melhor escolha custo-benefício. Apenas 3 paragrafos.
+        """
         
         response = client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=messages,
+            messages=[
+                {"role": "system", "content": "Você é um especialista automotivo e de mercado no Brasil."},
+                {"role": "user", "content": prompt}
+            ],
             temperature=0.7,
             max_tokens=800
         )
         return response.choices[0].message.content
-    except Exception as e_openai:
-        # Se falhar, usa o OpenRouter como fallback
-        try:
-            or_client = OpenAI(
-                base_url="https://openrouter.ai/api/v1",
-                api_key=os.environ.get("OPENROUTER_API_KEY")
-            )
-            response = or_client.chat.completions.create(
-                model="openai/gpt-4o-mini", # Equivalente no OpenRouter
-                messages=messages,
-                temperature=0.7,
-                max_tokens=800
-            )
-            return response.choices[0].message.content + "\n\n*(Análise gerada via OpenRouter - Fallback ativado)*"
-        except Exception as e_openrouter:
-            return f"Não foi possível obter a análise no momento.\nErro OpenAI: {e_openai}\nErro OpenRouter: {e_openrouter}"
+    except Exception as e:
+        return f"Não foi possível obter a análise no momento. Erro: {e}"
 
 def exibir_recomendacoes(valor_estimado):
     st.divider()
@@ -143,10 +126,8 @@ def exibir_recomendacoes(valor_estimado):
         else:
             st.dataframe(df_recomendacoes, use_container_width=True, hide_index=True)
             df_para_analise = df_recomendacoes.copy()
-        
-        st.divider()
-        
-        if st.button("🤖 Solicitar Análise do Especialista (OpenAI / OpenRouter)"):
+            
+        if st.button("🤖 Solicitar Análise do Especialista (OpenAI)"):
             with st.spinner("O especialista está analisando as opções e gerando um comparativo..."):
                 st.session_state['texto_analise'] = gerar_analise_especialista(df_para_analise)
                 
@@ -177,7 +158,7 @@ with st.form("form_previsao"):
         #portas = st.number_input("Número de Portas", min_value=2, max_value=5, value=4, step=1)
         
     with col3:
-        ano = st.number_input("Ano de Fabricação", min_value=1950, max_value=2026, value=2018, step=1)
+        ano = st.number_input("Ano de Fabricação", min_value=2000, max_value=2026, value=2018, step=1)
         #cor = st.selectbox("Cor", options=['Cinza', 'Preto', 'Branco', 'Azul', 'Prata', 'Vermelho'])
         #cambio = st.selectbox("Câmbio", options=['Manual', 'Automático'])
         #combustivel = st.selectbox("Combustível", options=['Gasolina', 'Flex', 'Diesel'])
