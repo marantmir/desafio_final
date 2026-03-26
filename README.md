@@ -55,9 +55,9 @@ Acesso: [🔗 Desafio Final Previsao de Valor de Carro](https://desafiofinal.str
 
 #### Streamlit / FastAPI / Docker
 
-A mesma aplicação pode ser executada localmente na linha do terminal através do streamlit ou através do docker que foi implementado. 
+A mesma aplicação pode ser executada localmente através do docker que foi implementado. 
 
-Apenas um valor de venda previsto é retornado, pois foi usado apenas o melhor modelo identificado na etapa de treinamento e avaliação, o modelo Lasso.
+Nesse caso, apenas um valor de venda previsto é retornado, pois foi usado apenas o melhor modelo identificado na etapa de treinamento e avaliação, o modelo Lasso.
 
 A analise do especialista só esta presente na aplicação do Streamlit / Cloud.
 
