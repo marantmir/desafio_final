@@ -2,12 +2,8 @@ import streamlit as st
 import pandas as pd
 import joblib
 from PIL import Image
-import os
-from dotenv import load_dotenv
-from openai import OpenAI
+#import base64
 
-# Carregar variáveis de ambiente (chave da OpenAI)
-load_dotenv(override=True)
 
 # Configuração da página
 st.set_page_config(page_title="Previsão de Preço de Carros", page_icon="🚗", layout="centered")
@@ -54,87 +50,34 @@ def load_data():
 
 df_carros = load_data()
 
-def gerar_analise_especialista(df_carros):
-    try:
-        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-        
-        carros_str = df_carros.to_string(index=False)
-        prompt = f"""
-        Você é um especialista em mecânica de automóveis e mercado de carros novos e usados no Brasil.
-        Um cliente está avaliando as seguintes opções de compra de carros dentro da sua faixa de preço baseada em uma predição:
-        
-        {carros_str}
-        
-        Analise essas opções e aponte claramente qual desses carros você recomendaria a compra e por quê. Considere durabilidade, mecânica, manutenção, consumo e mercado de revenda. O cliente quer a melhor escolha custo-benefício. Apenas 3 paragrafos.
-        """
-        
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "Você é um especialista automotivo e de mercado no Brasil."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-            max_tokens=800
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        return f"Não foi possível obter a análise no momento. Erro: {e}"
-
 def exibir_recomendacoes(valor_estimado):
     st.divider()
     st.markdown('### Recomendação:')
     st.subheader("Veja opções na mesma faixa de preço (10%) ")
     
-    # Garantir que a sugestão aleatória e a análise não mudem a cada interação na tela
-    if ('ultimo_valor_estimado' not in st.session_state or 
-        st.session_state['ultimo_valor_estimado'] != valor_estimado or 
-        'df_recomendacoes' not in st.session_state):
-        
-        limite_inferior = valor_estimado * 0.90
-        limite_superior = valor_estimado * 1.10
-        
-        # Buscar na base de dados carros dentro dos valores
-        carros_abaixo = df_carros[(df_carros['Valor_Venda'] >= limite_inferior) & (df_carros['Valor_Venda'] < valor_estimado)]
-        carros_acima = df_carros[(df_carros['Valor_Venda'] >= valor_estimado) & (df_carros['Valor_Venda'] <= limite_superior)]
-        
-        # Sortear até 2 carros de cada faixa
-        recomendados_abaixo = carros_abaixo.sample(n=min(2, len(carros_abaixo))) if not carros_abaixo.empty else pd.DataFrame()
-        recomendados_acima = carros_acima.sample(n=min(2, len(carros_acima))) if not carros_acima.empty else pd.DataFrame()
-        
-        # Juntar as recomendações em uma única tabela
-        df_recomendacoes = pd.concat([recomendados_abaixo, recomendados_acima])
-        
-        st.session_state['df_recomendacoes'] = df_recomendacoes
-        st.session_state['ultimo_valor_estimado'] = valor_estimado
-        st.session_state['texto_analise'] = None
-    else:
-        df_recomendacoes = st.session_state['df_recomendacoes']
+    limite_inferior = valor_estimado * 0.90
+    limite_superior = valor_estimado * 1.10
+    
+    # Buscar na base de dados carros dentro dos valores
+    carros_abaixo = df_carros[(df_carros['Valor_Venda'] >= limite_inferior) & (df_carros['Valor_Venda'] < valor_estimado)]
+    carros_acima = df_carros[(df_carros['Valor_Venda'] >= valor_estimado) & (df_carros['Valor_Venda'] <= limite_superior)]
+    
+    # Sortear até 2 carros de cada faixa
+    recomendados_abaixo = carros_abaixo.sample(n=min(2, len(carros_abaixo))) if not carros_abaixo.empty else pd.DataFrame()
+    recomendados_acima = carros_acima.sample(n=min(2, len(carros_acima))) if not carros_acima.empty else pd.DataFrame()
+    
+    # Juntar as recomendações em uma única tabela
+    df_recomendacoes = pd.concat([recomendados_abaixo, recomendados_acima])
     
     if not df_recomendacoes.empty:
-        colunas_mostrar = ['Marca', 'Modelo', 'Ano', 'Cor', 'Combustivel', 'Quilometragem', 'Valor_Venda']
+        colunas_mostrar = ['Marca', 'Modelo', 'Ano', 'Cor', 'Combustivel', 'Valor_Venda']
         if all(col in df_recomendacoes.columns for col in colunas_mostrar):
             df_exibicao = df_recomendacoes[colunas_mostrar].copy()
             df_exibicao = df_exibicao.sort_values(by='Valor_Venda')
-            
-            df_exibicao_formatado = df_exibicao.copy()
-            df_exibicao_formatado['Valor_Venda'] = df_exibicao_formatado['Valor_Venda'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-            st.dataframe(df_exibicao_formatado, use_container_width=True, hide_index=True)
-            
-            # Formar o dataframe apenas para a analise com valores precisos
-            df_para_analise = df_exibicao.copy()
+            df_exibicao['Valor_Venda'] = df_exibicao['Valor_Venda'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            st.dataframe(df_exibicao, use_container_width=True, hide_index=True)
         else:
             st.dataframe(df_recomendacoes, use_container_width=True, hide_index=True)
-            df_para_analise = df_recomendacoes.copy()
-            
-        if st.button("🤖 Solicitar Análise do Especialista (OpenAI)"):
-            with st.spinner("O especialista está analisando as opções e gerando um comparativo..."):
-                st.session_state['texto_analise'] = gerar_analise_especialista(df_para_analise)
-                
-        if st.session_state.get('texto_analise'):
-            st.markdown("### 👨‍🔧 Parecer do Especialista")
-            st.info(st.session_state['texto_analise'])
-            
     else:
         st.info("Não encontramos carros semelhantes a esse valor nesse exato momento na base de dados.")
 
@@ -174,9 +117,6 @@ with st.form("form_previsao"):
 st.markdown(html_page_aviso, unsafe_allow_html=True)
 
 if submit_button:
-    st.session_state['clicou_prever'] = True
-
-if st.session_state.get('clicou_prever', False):
     if marca and quilometragem and ano:
         # 1. Tratar os dados
         # A nova feature foi criada a partir de 2026 menos o Ano
