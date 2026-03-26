@@ -62,7 +62,7 @@ def gerar_analise_especialista(df_carros):
     
     {carros_str}
     
-    Analise essas opções e aponte claramente qual desses carros você recomendaria a compra e por quê. Considere durabilidade, mecânica, manutenção, consumo e mercado de revenda. O cliente quer a melhor escolha custo-benefício. Faça comparativos entre eles.
+    Analise essas opções e aponte claramente qual desses carros você recomendaria a compra e por quê. Considere durabilidade, mecânica, manutenção, consumo e mercado de revenda. O cliente quer a melhor escolha custo-benefício. Faça comparativos entre eles. Recomendação ou conclusão diretaa e curta.
     """
     
     messages = [
