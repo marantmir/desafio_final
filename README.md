@@ -28,7 +28,12 @@ O GridSearch foi aplicado ao melhor modelo para identificar os melhores hiperpar
 
 #### Deploy
 
-Foi implementada uma aplicação web com a lib Streamlit. 
+Foi implementada uma aplicação web com a lib Streamlit.
+O usuário seleciona as 3 caracteristicas do veiculo e envia o dados para os modelos treinados.
+As previsões são apresentadas numa tabela, identificando qual modelo fez a previsão.
+São apresentadas 4 recomendações de veiculos na mesma faixa de valor dos carros.
+Um agente especialista pode analisar as recomendações e indicar a melhor opção.
+A análise gerada pode ser baixada para ser analisada posteriormente.
 
 A aplicação esta hospedada no site streamlit.io.
 
@@ -36,7 +41,10 @@ Acesso: [🔗 Desafio Final Previsao de Valor de Carro](https://desafiofinal.str
 
 #### Docker
 
-A mesma aplicação pode ser executada localmente na linha do terminal através do streamlit ou através do docker que foi implementado. Para sua execução é preciso ter o Docker Desktop instalado no seu ambiente.
+A mesma aplicação pode ser executada localmente na linha do terminal através do streamlit ou através do docker que foi implementado. 
+Apenas uma valor de venda previsto é retornado, pois foi usado apenas o melhor modelo identificado na etapa de treinamento e avaliação, o modelo Lasso.
+A analise do especialista só esta presente na aplicação do Streamlit / Cloud.
+Para sua execução é preciso ter o Docker Desktop instalado no seu ambiente.
 
 Esta implementação fez  uso da lib FastAPI, onde um servidor espera requisitos POST na porta 8000 e devolve os valores previstos para os dados obtidos numa interface web do Streamlit.
 
